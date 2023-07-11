@@ -1,4 +1,5 @@
 import os
+import random
 from typing import List, Tuple
 
 from trdg.data_generator import FakeTextDataGenerator
@@ -17,8 +18,10 @@ class GeneratorFromStrings:
         strings: List[str],
         count: int = -1,
         fonts: List[str] = [],
+        out_dir: str = None,
         language: str = "en",
         size: int = 32,
+        extension: str = "jpg",
         skewing_angle: int = 0,
         random_skew: bool = False,
         blur: int = 0,
@@ -29,10 +32,10 @@ class GeneratorFromStrings:
         is_handwritten: bool = False,
         width: int = -1,
         alignment: int = 1,
-        text_color: str = "#282828",
+        text_colors: [str] = ["#282828"],
         orientation: int = 0,
-        space_width: float = 1.0,
-        character_spacing: int = 0,
+        space_widths: [float] = [1.0],
+        character_spacings: [int] = [0],
         margins: Tuple[int, int, int, int] = (5, 5, 5, 5),
         fit: bool = False,
         output_mask: bool = False,
@@ -40,8 +43,8 @@ class GeneratorFromStrings:
         image_dir: str = os.path.join(
             "..", os.path.split(os.path.realpath(__file__))[0], "images"
         ),
-        stroke_width: int = 0,
-        stroke_fill: str = "#282828",
+        stroke_widths: List[int] = [0],
+        stroke_fills: List[str] = ["#282828"],
         image_mode: str = "RGB",
         output_bboxes: int = 0,
         rtl: bool = False,
@@ -49,6 +52,7 @@ class GeneratorFromStrings:
         self.count = count
         self.strings = strings
         self.fonts = fonts
+        self.extension = extension
         if len(fonts) == 0:
             self.fonts = load_fonts(language)
         self.rtl = rtl
@@ -65,6 +69,7 @@ class GeneratorFromStrings:
             self.strings = self.reshape_rtl(self.strings, self.rtl_shaper)
         self.language = language
         self.size = size
+        self.out_dir = out_dir
         self.skewing_angle = skewing_angle
         self.random_skew = random_skew
         self.blur = blur
@@ -75,10 +80,10 @@ class GeneratorFromStrings:
         self.is_handwritten = is_handwritten
         self.width = width
         self.alignment = alignment
-        self.text_color = text_color
+        self.text_colors = text_colors
         self.orientation = orientation
-        self.space_width = space_width
-        self.character_spacing = character_spacing
+        self.space_widths = space_widths
+        self.character_spacings = character_spacings
         self.margins = margins
         self.fit = fit
         self.output_mask = output_mask
@@ -86,8 +91,8 @@ class GeneratorFromStrings:
         self.image_dir = image_dir
         self.output_bboxes = output_bboxes
         self.generated_count = 0
-        self.stroke_width = stroke_width
-        self.stroke_fill = stroke_fill
+        self.stroke_widths = stroke_widths
+        self.stroke_fills = stroke_fills
         self.image_mode = image_mode
 
     def __iter__(self):
@@ -105,9 +110,9 @@ class GeneratorFromStrings:
                 self.generated_count,
                 self.strings[(self.generated_count - 1) % len(self.strings)],
                 self.fonts[(self.generated_count - 1) % len(self.fonts)],
-                None,
+                self.out_dir,
                 self.size,
-                None,
+                self.extension,
                 self.skewing_angle,
                 self.random_skew,
                 self.blur,
@@ -119,17 +124,18 @@ class GeneratorFromStrings:
                 0,
                 self.width,
                 self.alignment,
-                self.text_color,
+                random.choice(self.text_colors),
                 self.orientation,
-                self.space_width,
-                self.character_spacing,
+                random.choice(self.space_widths),
+                random.choice(self.character_spacings),
                 self.margins,
                 self.fit,
                 self.output_mask,
                 self.word_split,
                 self.image_dir,
-                self.stroke_width,
-                self.stroke_fill,
+                # random stroke width and fill
+                random.choice(self.stroke_widths),
+                random.choice(self.stroke_fills),
                 self.image_mode,
                 self.output_bboxes,
             ),

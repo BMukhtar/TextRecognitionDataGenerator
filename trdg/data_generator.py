@@ -2,6 +2,7 @@ import os
 import random as rnd
 
 from PIL import Image, ImageFilter, ImageStat
+from typing import Tuple
 
 from trdg import computer_text_generator, background_generator, distorsion_generator
 from trdg.utils import mask_to_bboxes, make_filename_valid
@@ -45,7 +46,7 @@ class FakeTextDataGenerator(object):
         orientation: int,
         space_width: int,
         character_spacing: int,
-        margins: int,
+        margins: Tuple[int, int, int, int],
         fit: bool,
         output_mask: bool,
         word_split: bool,
