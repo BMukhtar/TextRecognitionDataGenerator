@@ -26,16 +26,16 @@ class GeneratorFromStrings:
         random_skew: bool = False,
         blur: int = 0,
         random_blur: bool = False,
-        background_type: int = 0,
-        distorsion_type: int = 0,
+        background_types: List[int] = [0],
+        distorsion_types: List[int] = [0],
         distorsion_orientation: int = 0,
         is_handwritten: bool = False,
         width: int = -1,
         alignment: int = 1,
-        text_colors: [str] = ["#282828"],
+        text_colors: List[str] = ["#282828"],
         orientation: int = 0,
-        space_widths: [float] = [1.0],
-        character_spacings: [int] = [0],
+        space_widths: List[float] = [1.0],
+        character_spacings: List[int] = [0],
         margins: Tuple[int, int, int, int] = (5, 5, 5, 5),
         fit: bool = False,
         output_mask: bool = False,
@@ -74,8 +74,8 @@ class GeneratorFromStrings:
         self.random_skew = random_skew
         self.blur = blur
         self.random_blur = random_blur
-        self.background_type = background_type
-        self.distorsion_type = distorsion_type
+        self.background_types = background_types
+        self.distorsion_types = distorsion_types
         self.distorsion_orientation = distorsion_orientation
         self.is_handwritten = is_handwritten
         self.width = width
@@ -117,8 +117,8 @@ class GeneratorFromStrings:
                 self.random_skew,
                 self.blur,
                 self.random_blur,
-                self.background_type,
-                self.distorsion_type,
+                random.choice(self.background_types),
+                random.choice(self.distorsion_types),
                 self.distorsion_orientation,
                 self.is_handwritten,
                 0,
