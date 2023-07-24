@@ -34,7 +34,7 @@ class GeneratorFromDict:
         orientation: int = 0,
         space_widths: List[float] = [1.0],
         character_spacings: List[int] = [0],
-        margins: Tuple[int, int, int, int] = (5, 5, 5, 5),
+        margins: List[Tuple[int, int, int, int]] = [(5, 5, 5, 5)],
         fit: bool = False,
         output_mask: bool = False,
         word_split: bool = False,
@@ -47,6 +47,7 @@ class GeneratorFromDict:
         output_bboxes: int = 0,
         path: str = "",
         rtl: bool = False,
+        random_case: bool = False,
     ):
         self.count = count
         self.length = length
@@ -98,6 +99,7 @@ class GeneratorFromDict:
             image_mode,
             output_bboxes,
             rtl,
+            random_case,
         )
 
     def __iter__(self):

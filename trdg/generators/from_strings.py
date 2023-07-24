@@ -14,40 +14,41 @@ class GeneratorFromStrings:
     """Generator that uses a given list of strings"""
 
     def __init__(
-        self,
-        strings: List[str],
-        count: int = -1,
-        fonts: List[str] = [],
-        out_dir: str = None,
-        language: str = "en",
-        size: int = 32,
-        extension: str = "jpg",
-        skewing_angle: int = 0,
-        random_skew: bool = False,
-        blur: int = 0,
-        random_blur: bool = False,
-        background_types: List[int] = [0],
-        distorsion_types: List[int] = [0],
-        distorsion_orientation: int = 0,
-        is_handwritten: bool = False,
-        width: int = -1,
-        alignment: int = 1,
-        text_colors: List[str] = ["#282828"],
-        orientation: int = 0,
-        space_widths: List[float] = [1.0],
-        character_spacings: List[int] = [0],
-        margins: Tuple[int, int, int, int] = (5, 5, 5, 5),
-        fit: bool = False,
-        output_mask: bool = False,
-        word_split: bool = False,
-        image_dir: str = os.path.join(
-            "..", os.path.split(os.path.realpath(__file__))[0], "images"
-        ),
-        stroke_widths: List[int] = [0],
-        stroke_fills: List[str] = ["#282828"],
-        image_mode: str = "RGB",
-        output_bboxes: int = 0,
-        rtl: bool = False,
+            self,
+            strings: List[str],
+            count: int = -1,
+            fonts: List[str] = [],
+            out_dir: str = None,
+            language: str = "en",
+            size: int = 32,
+            extension: str = "jpg",
+            skewing_angle: int = 0,
+            random_skew: bool = False,
+            blur: int = 0,
+            random_blur: bool = False,
+            background_types: List[int] = [0],
+            distorsion_types: List[int] = [0],
+            distorsion_orientation: int = 0,
+            is_handwritten: bool = False,
+            width: int = -1,
+            alignment: int = 1,
+            text_colors: List[str] = ["#282828"],
+            orientation: int = 0,
+            space_widths: List[float] = [1.0],
+            character_spacings: List[int] = [0],
+            margins: List[Tuple[int, int, int, int]] = [(5, 5, 5, 5)],
+            fit: bool = False,
+            output_mask: bool = False,
+            word_split: bool = False,
+            image_dir: str = os.path.join(
+                "..", os.path.split(os.path.realpath(__file__))[0], "images"
+            ),
+            stroke_widths: List[int] = [0],
+            stroke_fills: List[str] = ["#282828"],
+            image_mode: str = "RGB",
+            output_bboxes: int = 0,
+            rtl: bool = False,
+            random_case: bool = False,
     ):
         self.count = count
         self.strings = strings
@@ -94,6 +95,7 @@ class GeneratorFromStrings:
         self.stroke_widths = stroke_widths
         self.stroke_fills = stroke_fills
         self.image_mode = image_mode
+        self.random_case = random_case
 
     def __iter__(self):
         return self
@@ -105,11 +107,16 @@ class GeneratorFromStrings:
         if self.generated_count == self.count:
             raise StopIteration
         self.generated_count += 1
+        next_string = self.orig_strings[(self.generated_count - 1) % len(self.orig_strings)] if self.rtl else \
+        self.strings[(self.generated_count - 1) % len(self.strings)]
+        if self.random_case:
+            if random.randint(0, 1) == 0:
+                next_string = next_string.capitalize()
         return (
             FakeTextDataGenerator.generate(
                 self.generated_count,
-                self.strings[(self.generated_count - 1) % len(self.strings)],
-                self.fonts[(self.generated_count - 1) % len(self.fonts)],
+                next_string,
+                random.choice(self.fonts),
                 self.out_dir,
                 self.size,
                 self.extension,
@@ -128,7 +135,7 @@ class GeneratorFromStrings:
                 self.orientation,
                 random.choice(self.space_widths),
                 random.choice(self.character_spacings),
-                self.margins,
+                random.choice(self.margins),
                 self.fit,
                 self.output_mask,
                 self.word_split,
@@ -139,9 +146,7 @@ class GeneratorFromStrings:
                 self.image_mode,
                 self.output_bboxes,
             ),
-            self.orig_strings[(self.generated_count - 1) % len(self.orig_strings)]
-            if self.rtl
-            else self.strings[(self.generated_count - 1) % len(self.strings)],
+            next_string,
         )
 
     def reshape_rtl(self, strings: list, rtl_shaper: ArabicReshaper):
