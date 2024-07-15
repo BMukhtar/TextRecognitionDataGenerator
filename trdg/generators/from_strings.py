@@ -20,7 +20,7 @@ class GeneratorFromStrings:
             fonts: List[str] = [],
             out_dir: str = None,
             language: str = "en",
-            size: int = 32,
+            sizes: List[int] = [32],
             extension: str = "jpg",
             skewing_angle: int = 0,
             random_skew: bool = False,
@@ -69,7 +69,7 @@ class GeneratorFromStrings:
             # reshape the strings
             self.strings = self.reshape_rtl(self.strings, self.rtl_shaper)
         self.language = language
-        self.size = size
+        self.sizes = sizes
         self.out_dir = out_dir
         self.skewing_angle = skewing_angle
         self.random_skew = random_skew
@@ -118,7 +118,7 @@ class GeneratorFromStrings:
                 next_string,
                 random.choice(self.fonts),
                 self.out_dir,
-                self.size,
+                random.choice(self.sizes),
                 self.extension,
                 self.skewing_angle,
                 self.random_skew,
@@ -136,7 +136,7 @@ class GeneratorFromStrings:
                 random.choice(self.space_widths),
                 random.choice(self.character_spacings),
                 random.choice(self.margins),
-                self.fit,
+                random.choice([True, False]),
                 self.output_mask,
                 self.word_split,
                 self.image_dir,

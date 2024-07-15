@@ -3,6 +3,7 @@ import random as rnd
 
 from PIL import Image, ImageFilter, ImageStat
 from typing import Tuple
+import logging
 
 from trdg import computer_text_generator, background_generator, distorsion_generator
 from trdg.utils import mask_to_bboxes, make_filename_valid
@@ -190,10 +191,12 @@ class FakeTextDataGenerator(object):
             background_img_px_mean = sum(background_img_st.mean) / 3
 
             if abs(resized_img_px_mean - background_img_px_mean) < 15:
-                print("value of mean pixel is too similar. Ignore this image")
-
-                print("resized_img_st \n {}".format(resized_img_st.mean))
-                print("background_img_st \n {}".format(background_img_st.mean))
+                logging.warn(
+                    "value of mean pixel is too similar. Ignore this image. Index: {}".format(
+                        index
+                    )
+                )
+                
 
                 return
         except Exception as err:
@@ -240,8 +243,12 @@ class FakeTextDataGenerator(object):
         # Apply gaussian blur #
         #######################
 
+        gausian_blur_radius = blur if not random_blur else rnd.random() * blur
+        # scale according to size
+        gausian_blur_radius = int(gausian_blur_radius * size / 50)
+
         gaussian_filter = ImageFilter.GaussianBlur(
-            radius=blur if not random_blur else rnd.random() * blur
+            radius=gausian_blur_radius
         )
         final_image = background_img.filter(gaussian_filter)
         final_mask = background_mask.filter(gaussian_filter)
