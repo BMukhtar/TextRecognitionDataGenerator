@@ -35,6 +35,7 @@ def dataset(folder: str, dicts):
     labels = []
     for dict_index, (dict_path, dict_size) in enumerate(dicts):
         generator = GeneratorFromDict(
+            count=128,
             blur=1,
             length=1,
             allow_variable=False,
@@ -69,8 +70,8 @@ def dataset(folder: str, dicts):
     df.to_csv(f"{folder}labels.csv", sep="\t", index=False)
 
 
-test_folder = "../../synthtiger_kz/results/test_v12/dtgr/"
-train_folder = "../../synthtiger_kz/results/train_v12/dtgr/"
+test_folder = "../../synthtiger_kz/results/test_v12/dtgr_v2/"
+train_folder = "../../synthtiger_kz/results/train_v12/dtgr_v2/"
 generated_corpus = "../../synthtiger_kz/resources/corpus/kz_corpus_generated.txt"
 russian_corpus = "../../synthtiger_kz/resources/corpus/russian.txt"
 test_dicts = [(generated_corpus, 1000), (russian_corpus, 1000)]

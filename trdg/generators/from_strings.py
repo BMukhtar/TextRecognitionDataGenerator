@@ -104,8 +104,8 @@ class GeneratorFromStrings:
         return self.next()
 
     def next(self):
-        if self.generated_count == self.count:
-            raise StopIteration
+        # if self.generated_count == self.count:
+        #     raise StopIteration
         self.generated_count += 1
         next_string = self.orig_strings[(self.generated_count - 1) % len(self.orig_strings)] if self.rtl else \
         self.strings[(self.generated_count - 1) % len(self.strings)]
