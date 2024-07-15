@@ -127,35 +127,45 @@ class FakeTextDataGenerator(object):
         ##################################
 
         # Horizontal text
-        if orientation == 0:
-            new_width = int(
-                distorted_img.size[0]
-                * (float(size - vertical_margin) / float(distorted_img.size[1]))
+        initial_height = distorted_img.size[1]
+        try:
+
+            if orientation == 0:
+                new_width = int(
+                    distorted_img.size[0]
+                    * (float(initial_height - vertical_margin) / float(initial_height))
+                )
+                resized_img = distorted_img.resize(
+                    (new_width, initial_height - vertical_margin), Image.Resampling.LANCZOS
+                )
+                resized_mask = distorted_mask.resize(
+                    (new_width, initial_height - vertical_margin), Image.Resampling.NEAREST
+                )
+                background_width = width if width > 0 else new_width + horizontal_margin
+                background_height = initial_height
+            # Vertical text
+            elif orientation == 1:
+                new_height = int(
+                    float(distorted_img.size[1])
+                    * (float(size - horizontal_margin) / float(distorted_img.size[0]))
+                )
+                resized_img = distorted_img.resize(
+                    (size - horizontal_margin, new_height), Image.Resampling.LANCZOS
+                )
+                resized_mask = distorted_mask.resize(
+                    (size - horizontal_margin, new_height), Image.Resampling.NEAREST
+                )
+                background_width = size
+                background_height = new_height + vertical_margin
+            else:
+                raise ValueError("Invalid orientation")
+        except Exception as e:
+            logging.error(
+                "Error resizing image. Index: {}. Text: {}. Error: {}".format(
+                    index, text, e
+                )
             )
-            resized_img = distorted_img.resize(
-                (new_width, size - vertical_margin), Image.Resampling.LANCZOS
-            )
-            resized_mask = distorted_mask.resize(
-                (new_width, size - vertical_margin), Image.Resampling.NEAREST
-            )
-            background_width = width if width > 0 else new_width + horizontal_margin
-            background_height = size
-        # Vertical text
-        elif orientation == 1:
-            new_height = int(
-                float(distorted_img.size[1])
-                * (float(size - horizontal_margin) / float(distorted_img.size[0]))
-            )
-            resized_img = distorted_img.resize(
-                (size - horizontal_margin, new_height), Image.Resampling.LANCZOS
-            )
-            resized_mask = distorted_mask.resize(
-                (size - horizontal_margin, new_height), Image.Resampling.NEAREST
-            )
-            background_width = size
-            background_height = new_height + vertical_margin
-        else:
-            raise ValueError("Invalid orientation")
+            return None
 
         #############################
         # Generate background image #
