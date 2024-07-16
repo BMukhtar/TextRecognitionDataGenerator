@@ -128,75 +128,68 @@ class FakeTextDataGenerator(object):
 
         # Horizontal text
         initial_height = distorted_img.size[1]
-        try:
 
-            if orientation == 0:
-                new_width = int(
-                    distorted_img.size[0]
-                    * (float(initial_height - vertical_margin) / float(initial_height))
+        if orientation == 0:
+            if initial_height - vertical_margin < 10:
+                logging.warn(
+                    "height is too small. Resetting vertical margins"
                 )
-                resized_img = distorted_img.resize(
-                    (new_width, initial_height - vertical_margin), Image.Resampling.LANCZOS
-                )
-                resized_mask = distorted_mask.resize(
-                    (new_width, initial_height - vertical_margin), Image.Resampling.NEAREST
-                )
-                background_width = width if width > 0 else new_width + horizontal_margin
-                background_height = initial_height
-            # Vertical text
-            elif orientation == 1:
-                new_height = int(
-                    float(distorted_img.size[1])
-                    * (float(size - horizontal_margin) / float(distorted_img.size[0]))
-                )
-                resized_img = distorted_img.resize(
-                    (size - horizontal_margin, new_height), Image.Resampling.LANCZOS
-                )
-                resized_mask = distorted_mask.resize(
-                    (size - horizontal_margin, new_height), Image.Resampling.NEAREST
-                )
-                background_width = size
-                background_height = new_height + vertical_margin
-            else:
-                raise ValueError("Invalid orientation")
-        except Exception as e:
-            logging.error(
-                "Error resizing image. Index: {}. Text: {}. Error: {}".format(
-                    index, text, e
-                )
+                vertical_margin = 0
+                margin_top = 0
+                margin_bottom = 0
+            new_width = int(
+                distorted_img.size[0]
+                * (float(initial_height - vertical_margin) / float(initial_height))
             )
-            return None
+            resized_img = distorted_img.resize(
+                (new_width, initial_height - vertical_margin), Image.Resampling.LANCZOS
+            )
+            resized_mask = distorted_mask.resize(
+                (new_width, initial_height - vertical_margin), Image.Resampling.NEAREST
+            )
+            background_width = width if width > 0 else new_width + horizontal_margin
+            background_height = initial_height
+        # Vertical text
+        elif orientation == 1:
+            new_height = int(
+                float(distorted_img.size[1])
+                * (float(size - horizontal_margin) / float(distorted_img.size[0]))
+            )
+            resized_img = distorted_img.resize(
+                (size - horizontal_margin, new_height), Image.Resampling.LANCZOS
+            )
+            resized_mask = distorted_mask.resize(
+                (size - horizontal_margin, new_height), Image.Resampling.NEAREST
+            )
+            background_width = size
+            background_height = new_height + vertical_margin
+        else:
+            raise ValueError("Invalid orientation")
+
 
         #############################
         # Generate background image #
         #############################
-        try:
-            if background_type == 0:
-                background_img = background_generator.gaussian_noise(
-                    background_height, background_width
-                )
-            elif background_type == 1:
-                background_img = background_generator.plain_white(
-                    background_height, background_width
-                )
-            elif background_type == 2:
-                background_img = background_generator.quasicrystal(
-                    background_height, background_width
-                )
-            else:
-                background_img = background_generator.image(
-                    background_height, background_width, image_dir
-                )
-            background_mask = Image.new(
-                "RGB", (background_width, background_height), (0, 0, 0)
+        if background_type == 0:
+            background_img = background_generator.gaussian_noise(
+                background_height, background_width
             )
-        except Exception as e:
-            logging.error(
-                "Error generating background image. Index: {}. Text: {}. Error: {}".format(
-                    index, text, e
-                )
+        elif background_type == 1:
+            background_img = background_generator.plain_white(
+                background_height, background_width
             )
-            return None
+        elif background_type == 2:
+            background_img = background_generator.quasicrystal(
+                background_height, background_width
+            )
+        else:
+            background_img = background_generator.image(
+                background_height, background_width, image_dir
+            )
+        background_mask = Image.new(
+            "RGB", (background_width, background_height), (0, 0, 0)
+        )
+       
 
         ##############################################################
         # Comparing average pixel value of text and background image #
@@ -208,7 +201,7 @@ class FakeTextDataGenerator(object):
             resized_img_px_mean = sum(resized_img_st.mean[:2]) / 3
             background_img_px_mean = sum(background_img_st.mean) / 3
 
-            if abs(resized_img_px_mean - background_img_px_mean) < 15:
+            if abs(resized_img_px_mean - background_img_px_mean) < 30:
                 logging.warn(
                     "value of mean pixel is too similar. Ignore this image. Index: {}".format(
                         index

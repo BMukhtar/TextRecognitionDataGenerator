@@ -9,6 +9,8 @@ from trdg.utils import load_dict, load_fonts
 from arabic_reshaper import ArabicReshaper
 from bidi.algorithm import get_display
 import logging
+import traceback
+import json
 
 
 class GeneratorFromStrings:
@@ -61,7 +63,8 @@ class GeneratorFromStrings:
         self.orig_strings = []
         if self.rtl:
             if language == "ckb":
-                ar_reshaper_config = {"delete_harakat": True, "language": "Kurdish"}
+                ar_reshaper_config = {
+                    "delete_harakat": True, "language": "Kurdish"}
             else:
                 ar_reshaper_config = {"delete_harakat": False}
             self.rtl_shaper = ArabicReshaper(configuration=ar_reshaper_config)
@@ -109,46 +112,50 @@ class GeneratorFromStrings:
         #     raise StopIteration
         self.generated_count += 1
         next_string = self.orig_strings[(self.generated_count - 1) % len(self.orig_strings)] if self.rtl else \
-        self.strings[(self.generated_count - 1) % len(self.strings)]
+            self.strings[(self.generated_count - 1) % len(self.strings)]
         if self.random_case:
             if random.randint(0, 1) == 0:
                 next_string = next_string.capitalize()
+        # Create a dictionary with all the parameters
+        params = {
+            "index": self.generated_count,
+            "text": next_string,
+            "font": random.choice(self.fonts),
+            "out_dir": self.out_dir,
+            "size": random.choice(self.sizes),
+            "extension": self.extension,
+            "skewing_angle": self.skewing_angle,
+            "random_skew": self.random_skew,
+            "blur": self.blur,
+            "random_blur": self.random_blur,
+            "background_type": random.choice(self.background_types),
+            "distorsion_type": random.choice(self.distorsion_types),
+            "distorsion_orientation": self.distorsion_orientation,
+            "is_handwritten": self.is_handwritten,
+            "name_format": 0,
+            "width": self.width,
+            "alignment": self.alignment,
+            "text_color": random.choice(self.text_colors),
+            "orientation": self.orientation,
+            "space_width": random.choice(self.space_widths),
+            "character_spacing": random.choice(self.character_spacings),
+            "margins": random.choice(self.margins),
+            "fit": random.choice([True, False]),
+            "output_mask": self.output_mask,
+            "word_split": self.word_split,
+            "image_dir": self.image_dir,
+            "stroke_width": random.choice(self.stroke_widths),
+            "stroke_fill": random.choice(self.stroke_fills),
+            "image_mode": self.image_mode,
+            "output_bboxes": self.output_bboxes,
+        }
         try:
             img = FakeTextDataGenerator.generate(
-                    self.generated_count,
-                    next_string,
-                    random.choice(self.fonts),
-                    self.out_dir,
-                    random.choice(self.sizes),
-                    self.extension,
-                    self.skewing_angle,
-                    self.random_skew,
-                    self.blur,
-                    self.random_blur,
-                    random.choice(self.background_types),
-                    random.choice(self.distorsion_types),
-                    self.distorsion_orientation,
-                    self.is_handwritten,
-                    0,
-                    self.width,
-                    self.alignment,
-                    random.choice(self.text_colors),
-                    self.orientation,
-                    random.choice(self.space_widths),
-                    random.choice(self.character_spacings),
-                    random.choice(self.margins),
-                    random.choice([True, False]),
-                    self.output_mask,
-                    self.word_split,
-                    self.image_dir,
-                    # random stroke width and fill
-                    random.choice(self.stroke_widths),
-                    random.choice(self.stroke_fills),
-                    self.image_mode,
-                    self.output_bboxes,
-                )
+                **params
+            )
         except Exception as e:
-            logging.error(f"Error generating image: {e}")
+            logging.error(f"Error generating image: {e}, \n\n params: {json.dumps(params, indent=4, ensure_ascii=False)}\n\n")
+            logging.error(traceback.format_exc())
             return (
                 None,
                 next_string,
