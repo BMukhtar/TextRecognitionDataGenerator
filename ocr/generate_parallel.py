@@ -25,7 +25,10 @@ ttf_files = get_ttf_files(fonts_folder)
 def generate_margins(n=100, m=3):
     return [(random.randint(0, m), random.randint(0, m), random.randint(0, m), random.randint(0, m)) for _ in range(n)]
 
-def process_chunk(start_idx, end_idx, generator_params, folder, dict_index):
+from tqdm import tqdm
+from queue import Empty
+
+def process_chunk(start_idx, end_idx, generator_params, folder, dict_index, queue):
     generator = GeneratorFromDict(**generator_params)
     local_labels = []
     
@@ -38,32 +41,54 @@ def process_chunk(start_idx, end_idx, generator_params, folder, dict_index):
         file_path = f"{folder}{file_name}"
         img.save(file_path)
         local_labels.append(('./' + file_name, lbl))
+        
+        if (idx - start_idx + 1) % 100 == 0:
+            queue.put(100)
+    
+    # Report any remaining items
+    remaining = (end_idx - start_idx) % 100
+    if remaining > 0:
+        queue.put(remaining)
     
     return local_labels
 
 def parallelize_generation(dict_size, generator_params, folder, dict_index):
-    num_cores = multiprocessing.cpu_count() - 1
+    num_cores = multiprocessing.cpu_count()
     chunk_size = max(1, dict_size // num_cores)
     
     pool = multiprocessing.Pool(processes=num_cores)
+    manager = multiprocessing.Manager()
+    queue = manager.Queue()
     
     chunks = [(i * chunk_size, min((i + 1) * chunk_size, dict_size)) for i in range(num_cores)]
     
     process_func = partial(process_chunk, 
                            generator_params=generator_params, 
                            folder=folder, 
-                           dict_index=dict_index)
+                           dict_index=dict_index,
+                           queue=queue)
     
     results = []
     with tqdm(total=dict_size, desc=f"Dict {dict_index}") as pbar:
-        for result in pool.starmap(process_func, chunks):
-            results.extend(result)
-            pbar.update(len(result))
+        async_results = [pool.apply_async(process_func, chunk) for chunk in chunks]
+        
+        completed = 0
+        epsilon = 100
+        while completed + epsilon < dict_size:
+            try:
+                progress = queue.get(timeout=5)
+                pbar.update(progress)
+                completed += progress
+            except Empty:
+                print("Queue is empty")
+                pass
+        
+        results = [res.get() for res in async_results]
     
     pool.close()
     pool.join()
     
-    return results
+    return [item for sublist in results for item in sublist]  # Flatten the list of results
 
 def dataset(folder: str, dicts):
     # clean folder
