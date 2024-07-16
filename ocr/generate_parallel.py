@@ -129,14 +129,14 @@ def dataset(folder: str, dicts):
     df.to_csv(f"{folder}labels.csv", sep="\t", index=False)
 
 if __name__ == "__main__":
-    test_folder = "../../synthtiger_kz/results/test_v12/dtgr_v3/"
-    train_folder = "../../synthtiger_kz/results/train_v12/dtgr_v3/"
+    test_folder = "../../synthtiger_kz/results/test_v12/dtgr_v4/"
+    train_folder = "../../synthtiger_kz/results/train_v12/dtgr_v4/"
     generated_corpus = "../../synthtiger_kz/resources/corpus/kz_corpus_generated.txt"
     russian_corpus = "../../synthtiger_kz/resources/corpus/russian.txt"
     test_dicts = [(generated_corpus, 1000), (russian_corpus, 1000)]
-    train_dicts = [(generated_corpus, 500000), (russian_corpus, 50000)]
+    train_dicts = [(russian_corpus, 100000), (generated_corpus, 400000)]
     
-    print("Generating test dataset...")
-    dataset(test_folder, test_dicts)
+    # print("Generating test dataset...")
+    # dataset(test_folder, test_dicts)
     print("Generating train dataset...")
     dataset(train_folder, train_dicts)
