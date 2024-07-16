@@ -8,6 +8,7 @@ from trdg.utils import load_dict, load_fonts
 # support RTL
 from arabic_reshaper import ArabicReshaper
 from bidi.algorithm import get_display
+import logging
 
 
 class GeneratorFromStrings:
@@ -112,40 +113,48 @@ class GeneratorFromStrings:
         if self.random_case:
             if random.randint(0, 1) == 0:
                 next_string = next_string.capitalize()
-        return (
-            FakeTextDataGenerator.generate(
-                self.generated_count,
+        try:
+            img = FakeTextDataGenerator.generate(
+                    self.generated_count,
+                    next_string,
+                    random.choice(self.fonts),
+                    self.out_dir,
+                    random.choice(self.sizes),
+                    self.extension,
+                    self.skewing_angle,
+                    self.random_skew,
+                    self.blur,
+                    self.random_blur,
+                    random.choice(self.background_types),
+                    random.choice(self.distorsion_types),
+                    self.distorsion_orientation,
+                    self.is_handwritten,
+                    0,
+                    self.width,
+                    self.alignment,
+                    random.choice(self.text_colors),
+                    self.orientation,
+                    random.choice(self.space_widths),
+                    random.choice(self.character_spacings),
+                    random.choice(self.margins),
+                    random.choice([True, False]),
+                    self.output_mask,
+                    self.word_split,
+                    self.image_dir,
+                    # random stroke width and fill
+                    random.choice(self.stroke_widths),
+                    random.choice(self.stroke_fills),
+                    self.image_mode,
+                    self.output_bboxes,
+                )
+        except Exception as e:
+            logging.error(f"Error generating image: {e}")
+            return (
+                None,
                 next_string,
-                random.choice(self.fonts),
-                self.out_dir,
-                random.choice(self.sizes),
-                self.extension,
-                self.skewing_angle,
-                self.random_skew,
-                self.blur,
-                self.random_blur,
-                random.choice(self.background_types),
-                random.choice(self.distorsion_types),
-                self.distorsion_orientation,
-                self.is_handwritten,
-                0,
-                self.width,
-                self.alignment,
-                random.choice(self.text_colors),
-                self.orientation,
-                random.choice(self.space_widths),
-                random.choice(self.character_spacings),
-                random.choice(self.margins),
-                random.choice([True, False]),
-                self.output_mask,
-                self.word_split,
-                self.image_dir,
-                # random stroke width and fill
-                random.choice(self.stroke_widths),
-                random.choice(self.stroke_fills),
-                self.image_mode,
-                self.output_bboxes,
-            ),
+            )
+        return (
+            img,
             next_string,
         )
 

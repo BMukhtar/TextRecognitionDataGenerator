@@ -23,7 +23,7 @@ config = {
 def generate_sample_image(index):
     return FakeTextDataGenerator.generate(
         index=index,
-        text=f"Hello World",
+        text=f"",
         font=config["font"],
         out_dir=None,
         size=config["size"],

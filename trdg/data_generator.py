@@ -170,25 +170,33 @@ class FakeTextDataGenerator(object):
         #############################
         # Generate background image #
         #############################
-        if background_type == 0:
-            background_img = background_generator.gaussian_noise(
-                background_height, background_width
+        try:
+            if background_type == 0:
+                background_img = background_generator.gaussian_noise(
+                    background_height, background_width
+                )
+            elif background_type == 1:
+                background_img = background_generator.plain_white(
+                    background_height, background_width
+                )
+            elif background_type == 2:
+                background_img = background_generator.quasicrystal(
+                    background_height, background_width
+                )
+            else:
+                background_img = background_generator.image(
+                    background_height, background_width, image_dir
+                )
+            background_mask = Image.new(
+                "RGB", (background_width, background_height), (0, 0, 0)
             )
-        elif background_type == 1:
-            background_img = background_generator.plain_white(
-                background_height, background_width
+        except Exception as e:
+            logging.error(
+                "Error generating background image. Index: {}. Text: {}. Error: {}".format(
+                    index, text, e
+                )
             )
-        elif background_type == 2:
-            background_img = background_generator.quasicrystal(
-                background_height, background_width
-            )
-        else:
-            background_img = background_generator.image(
-                background_height, background_width, image_dir
-            )
-        background_mask = Image.new(
-            "RGB", (background_width, background_height), (0, 0, 0)
-        )
+            return None
 
         ##############################################################
         # Comparing average pixel value of text and background image #
