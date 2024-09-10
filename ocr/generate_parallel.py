@@ -91,6 +91,9 @@ def parallelize_generation(dict_size, generator_params, folder, dict_index):
     return [item for sublist in results for item in sublist]  # Flatten the list of results
 
 def dataset(folder: str, dicts):
+    # create folder if not exists
+    if not os.path.exists(folder):
+        os.makedirs(folder)
     # clean folder
     for file in os.listdir(folder):
         os.remove(os.path.join(folder, file))
@@ -129,12 +132,12 @@ def dataset(folder: str, dicts):
     df.to_csv(f"{folder}labels.csv", sep="\t", index=False)
 
 if __name__ == "__main__":
-    test_folder = "../../synthtiger_kz/results/test_v12/dtgr_v5/"
-    train_folder = "../../synthtiger_kz/results/train_v12/dtgr_v5/"
+    test_folder = "../../doctr_htr/all_data_combined/train/dtgr_v6/"
+    train_folder = "../../doctr_htr/all_data_combined/test/dtgr_v6/"
     generated_corpus = "../../synthtiger_kz/resources/corpus/kz_corpus_generated.txt"
     russian_corpus = "../../synthtiger_kz/resources/corpus/russian.txt"
     test_dicts = [(generated_corpus, 1000), (russian_corpus, 1000)]
-    train_dicts = [(russian_corpus, 100000), (generated_corpus, 1000000)]
+    train_dicts = [(russian_corpus, 100000), (generated_corpus, 100000)]
     
     print("Generating test dataset...")
     dataset(test_folder, test_dicts)
