@@ -8,6 +8,21 @@ import logging
 import os
 import multiprocessing
 from functools import partial
+import json
+import string
+from typing import Dict
+
+afterword_symbols = "!?.,:;"
+numbers = "0123456789"
+other_symbols = string.punctuation + "«»…£€¥¢฿₸₽№°—"
+space_symbol = ' '
+kazakh_letters = 'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯЁабвгдежзийклмнопрстуфхцчшщъыьэюяёӘҒҚҢӨҰҮІҺәғқңөұүіһ'
+english_letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+all_letters = kazakh_letters + english_letters
+all_symbols = numbers + other_symbols + space_symbol + all_letters
+assert len(all_symbols) == len(set(all_symbols))
+
+all_set = set(all_symbols)
 
 logging.basicConfig(level=logging.ERROR)
 
@@ -34,7 +49,7 @@ def process_chunk(start_idx, end_idx, generator_params, folder, dict_index, queu
     
     for idx in range(start_idx, end_idx):
         (img, lbl) = generator.next()
-        while img is None:
+        while img is None or set(lbl).issubset(all_set) == False:
             (img, lbl) = generator.next()
 
         file_name = f"word_{str(dict_index).zfill(1)}_{str(idx).zfill(5)}.jpg"
@@ -97,6 +112,7 @@ def dataset(folder: str, dicts):
     # clean folder
     for file in os.listdir(folder):
         os.remove(os.path.join(folder, file))
+    os.makedirs(folder + "images/")
 
     labels = []
     for dict_index, (dict_path, dict_size) in enumerate(dicts):
@@ -124,16 +140,22 @@ def dataset(folder: str, dicts):
             "random_case": False,
         }
         
-        dict_labels = parallelize_generation(dict_size, generator_params, folder, dict_index)
+        dict_labels = parallelize_generation(dict_size, generator_params, folder + "images/", dict_index)
         labels.extend(dict_labels)
 
     # save to csv file with columns: filename, words with tab separator
     df = pd.DataFrame(labels, columns=["filename", "words"])
     df.to_csv(f"{folder}labels.csv", sep="\t", index=False)
+    labels_json = df.set_index('filename')['words'].to_dict()
+
+    with open(f"{folder}labels.json", 'w', encoding='utf-8') as f:
+        json.dump(labels_json, f, ensure_ascii=False, indent=4)
+
+
 
 if __name__ == "__main__":
-    test_folder = "../../doctr_htr/all_data_combined/train/dtgr_v6/"
-    train_folder = "../../doctr_htr/all_data_combined/test/dtgr_v6/"
+    test_folder = "../../doctr_htr/all_data_combined/test/dtgr_v7/"
+    train_folder = "../../doctr_htr/all_data_combined/train/dtgr_v7/"
     generated_corpus = "../../synthtiger_kz/resources/corpus/kz_corpus_generated.txt"
     russian_corpus = "../../synthtiger_kz/resources/corpus/russian.txt"
     test_dicts = [(generated_corpus, 1000), (russian_corpus, 1000)]
