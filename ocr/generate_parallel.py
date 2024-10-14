@@ -154,11 +154,11 @@ def dataset(folder: str, dicts):
 
 
 if __name__ == "__main__":
-    test_folder = "../../doctr_htr/all_data_combined/test/dtgr_v10_kaz/"
-    train_folder = "../../doctr_htr/all_data_combined/train/dtgr_v10_kaz/"
+    test_folder = "../../doctr_htr/all_data_combined/test/dtgr_v11_kaz/"
+    train_folder = "../../doctr_htr/all_data_combined/train/dtgr_v11_kaz/"
     generated_corpus = "../../synthtiger_kz/resources/corpus/kz_corpus_generated.txt"
     russian_corpus = "../../synthtiger_kz/resources/corpus/russian.txt"
-    test_dicts = [(generated_corpus, 1000), (russian_corpus, 1000)]
+    test_dicts = [(generated_corpus, 2000), (russian_corpus, 100)]
     train_dicts = [(russian_corpus, 2000), (generated_corpus, 500000)]
     
     print("Generating test dataset...")
