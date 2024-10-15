@@ -11,6 +11,8 @@ from functools import partial
 import json
 import string
 from typing import Dict
+import math
+import shutil
 
 afterword_symbols = "!?.,:;"
 numbers = "0123456789"
@@ -69,7 +71,7 @@ def process_chunk(start_idx, end_idx, generator_params, folder, dict_index, queu
 
 def parallelize_generation(dict_size, generator_params, folder, dict_index):
     num_cores = multiprocessing.cpu_count()
-    chunk_size = max(1, dict_size // num_cores)
+    chunk_size = max(1, math.ceil(dict_size / num_cores))
     
     pool = multiprocessing.Pool(processes=num_cores)
     manager = multiprocessing.Manager()
@@ -88,13 +90,18 @@ def parallelize_generation(dict_size, generator_params, folder, dict_index):
         async_results = [pool.apply_async(process_func, chunk) for chunk in chunks]
         
         completed = 0
-        epsilon = 100
+        epsilon = 0
+        empty_wait = 10
         while completed + epsilon < dict_size:
             try:
                 progress = queue.get(timeout=5)
                 pbar.update(progress)
                 completed += progress
+                empty_wait = 10
             except Empty:
+                if empty_wait < 0:
+                    break
+                empty_wait = empty_wait - 1
                 print("Queue is empty")
                 pass
         
@@ -107,12 +114,9 @@ def parallelize_generation(dict_size, generator_params, folder, dict_index):
 
 def dataset(folder: str, dicts):
     # create folder if not exists
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    # clean folder
-    for file in os.listdir(folder):
-        os.remove(os.path.join(folder, file))
-    os.makedirs(folder + "images/")
+    if os.path.exists(folder):
+        shutil.rmtree(folder)
+    os.makedirs(folder + "images/", exist_ok=True)
 
     labels = []
     for dict_index, (dict_path, dict_size) in enumerate(dicts):
@@ -154,12 +158,13 @@ def dataset(folder: str, dicts):
 
 
 if __name__ == "__main__":
-    test_folder = "../../doctr_htr/all_data_combined/test/dtgr_v11_kaz/"
-    train_folder = "../../doctr_htr/all_data_combined/train/dtgr_v11_kaz/"
+    test_folder = "../../doctr_htr/all_data_combined/test/dtgr_v13_large/"
+    train_folder = "../../doctr_htr/all_data_combined/train/dtgr_v13_large/"
     generated_corpus = "../../synthtiger_kz/resources/corpus/kz_corpus_generated.txt"
+    real_kz_corpus = "./corpus_words.txt"
     russian_corpus = "../../synthtiger_kz/resources/corpus/russian.txt"
-    test_dicts = [(generated_corpus, 2000), (russian_corpus, 100)]
-    train_dicts = [(russian_corpus, 2000), (generated_corpus, 500000)]
+    test_dicts = [(russian_corpus, 100), (generated_corpus, 100), (real_kz_corpus, 2000)]
+    train_dicts = [(russian_corpus, 2000), (generated_corpus, 50000), (real_kz_corpus, 1000000)]
     
     print("Generating test dataset...")
     dataset(test_folder, test_dicts)
