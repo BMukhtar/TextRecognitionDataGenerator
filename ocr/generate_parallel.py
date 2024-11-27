@@ -161,7 +161,7 @@ if __name__ == "__main__":
     test_folder = "../../doctr_htr/all_data_combined/test/dtgr_v13_large/"
     train_folder = "../../doctr_htr/all_data_combined/train/dtgr_v13_large/"
     generated_corpus = "../../synthtiger_kz/resources/corpus/kz_corpus_generated.txt"
-    real_kz_corpus = "./corpus_words.txt"
+    real_kz_corpus = "./corpus/corpus_words.txt"
     russian_corpus = "../../synthtiger_kz/resources/corpus/russian.txt"
     test_dicts = [(russian_corpus, 100), (generated_corpus, 100), (real_kz_corpus, 2000)]
     train_dicts = [(russian_corpus, 2000), (generated_corpus, 50000), (real_kz_corpus, 1000000)]
